@@ -1,0 +1,107 @@
+﻿<h3>Timepicker</h3>
+<style>
+    .timepicker-wrap {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    .time-dropper {
+        overflow: auto;
+        max-height: 200px;
+    }
+</style>
+<div class="timepicker-wrap">
+    <div class="dropdown" style="margin-right:10px">
+        <button data-toggle="dropdown">
+            @hour h
+        </button>
+        <div class="dropdown-menu time-dropper">
+            @foreach (var h in hoursList)
+            {
+                <a class="dropdown-item" @onclick="() => HoursChange(h)">@h</a>
+            }
+        </div>
+    </div>
+    <div class="dropdown" style="margin-right:10px">
+        <button data-toggle="dropdown">
+            @minutes m
+        </button>
+        <div class="dropdown-menu time-dropper">
+            @foreach (var m in minutesList)
+            {
+                <a class="dropdown-item" @onclick="() => MinutesChanged(m)">@m</a>
+            }
+        </div>
+    </div>
+</div>
+@code {
+    TimeSpan _time;
+    [Parameter]
+    public TimeSpan Time
+    {
+        get
+        {
+            return _time;
+        }
+        set
+        {
+            _time = value;
+            hour = value.Hours;
+            minutes = value.Minutes;
+        }
+    }
+
+    [Parameter] public EventCallback<TimeSpan> TimeChanged { get; set; }
+
+    int hour;
+    int minutes;
+    List<int> hoursList = new List<int>();
+    List<int> minutesList = new List<int>();
+    int minHour = 1;
+    int maxHour = 24;
+    int minMinutes = 0;
+    int maxMinutes = 60;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        this.ComputesHoursList();
+        this.ComputesMinutesList();
+    }
+
+    private void ComputesHoursList()
+    {
+        hoursList.Clear();
+        for (int i = minHour; i <= maxHour; i++)
+        {
+            hoursList.Add(i);
+        }
+    }
+
+    private void ComputesMinutesList()
+    {
+        minutesList.Clear();
+        for (int i = minMinutes; i <= maxMinutes; i++)
+        {
+            minutesList.Add(i);
+        }
+    }
+
+    private void HoursChange(int h)
+    {
+        hour = h;
+        RecalculateTime();
+    }
+
+    private void MinutesChanged(int m)
+    {
+        minutes = m;
+        RecalculateTime();
+    }
+
+    private void RecalculateTime()
+    {
+        Time = new TimeSpan(hour, minutes, 0);
+        TimeChanged.InvokeAsync(Time);
+    }
+}

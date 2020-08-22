@@ -1,0 +1,12 @@
+﻿@page "/timepickerSample"
+
+<TimepickerYoutube.Lib.Timepicker Time="testTimespan" TimeChanged="TimeChanged"></TimepickerYoutube.Lib.Timepicker>
+
+@code {
+    TimeSpan testTimespan = new TimeSpan(12, 30, 0);
+
+    private void TimeChanged(TimeSpan e)
+    {
+        testTimespan = e;
+    }
+}
