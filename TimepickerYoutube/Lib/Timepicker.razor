@@ -29,7 +29,10 @@
         <div class="dropdown-menu time-dropper">
             @foreach (var m in minutesList)
             {
-                <a class="dropdown-item" @onclick="() => MinutesChanged(m)">@m</a>
+                @if (IsAllowedMinutes(m))
+                {
+                    <a class="dropdown-item" @onclick="() => MinutesChanged(m)">@m</a>
+                }
             }
         </div>
     </div>
@@ -59,14 +62,55 @@
     List<int> minutesList = new List<int>();
     int minHour = 1;
     int maxHour = 24;
+    TimeSpan? _maxTime;
+    [Parameter]
+    public TimeSpan MaxTime
+    {
+        set
+        {
+            if (value != _maxTime)
+            {
+                _maxTime = value;
+                maxHour = value.Hours;
+            }
+        }
+    }
     int minMinutes = 0;
     int maxMinutes = 60;
-
-    protected override void OnInitialized()
+    TimeSpan? _minTime;
+    [Parameter]
+    public TimeSpan MinTime
     {
-        base.OnInitialized();
+        set
+        {
+            if (value != _minTime)
+            {
+                _minTime = value;
+                minHour = value.Hours;
+            }
+        }
+    }
+
+    private bool IsAllowedMinutes(int minute)
+    {
+        var t = new TimeSpan(hour, minute, 0);
+        return _minTime <= t && t <= _maxTime;
+    }
+
+    private TimeSpan GetCorrectTime()
+    {
+        var currTime = new TimeSpan(hour, minutes, 0);
+        if (_minTime.HasValue && currTime < _minTime.Value) return _minTime.Value;
+        if (_maxTime.HasValue && currTime > _maxTime.Value) return _maxTime.Value;
+        return currTime;
+    }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
         this.ComputesHoursList();
         this.ComputesMinutesList();
+        RecalculateTime();
     }
 
     private void ComputesHoursList()
@@ -101,7 +145,16 @@
 
     private void RecalculateTime()
     {
-        Time = new TimeSpan(hour, minutes, 0);
-        TimeChanged.InvokeAsync(Time);
+        var newTime = GetCorrectTime();
+        bool timeChanged = false;
+        if (Time == null)
+            timeChanged = true;
+        if (newTime.Ticks != (Time == null ? 0 : Time.Ticks))
+            timeChanged = true;
+        if (timeChanged)
+        {
+            Time = newTime;
+            TimeChanged.InvokeAsync(Time);
+        }
     }
 }

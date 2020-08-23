@@ -1,10 +1,11 @@
 ﻿@page "/timepickerSample"
 
-<TimepickerYoutube.Lib.Timepicker Time="testTimespan" TimeChanged="TimeChanged"></TimepickerYoutube.Lib.Timepicker>
+<TimepickerYoutube.Lib.Timepicker Time="testTimespan" MinTime="min" MaxTime="max" TimeChanged="TimeChanged"></TimepickerYoutube.Lib.Timepicker>
 
 @code {
     TimeSpan testTimespan = new TimeSpan(12, 30, 0);
-
+    TimeSpan min = new TimeSpan(13, 0, 0);
+    TimeSpan max = new TimeSpan(14, 0, 0);
     private void TimeChanged(TimeSpan e)
     {
         testTimespan = e;
